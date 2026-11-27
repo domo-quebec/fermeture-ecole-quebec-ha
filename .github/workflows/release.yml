@@ -1,17 +1,12 @@
 name: Release
 
-# Publishing is driven by the version tag: it must match the version in
-# custom_components/fermeture_ecole_quebec/manifest.json.
+# The manifest version is the single source of truth: every push to main that
+# carries a version without a tag gets one, and a release named after the tag.
 on:
   push:
-    tags:
-      - "v[0-9]+.[0-9]+.[0-9]+"
+    branches:
+      - main
   workflow_dispatch:
-    inputs:
-      tag:
-        description: Tag to publish (for example v0.1.1)
-        required: true
-        type: string
 
 permissions:
   contents: write
@@ -21,30 +16,23 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  release:
-    name: Publish release
+  check:
+    name: Check the manifest version
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+      tag_exists: ${{ steps.state.outputs.tag_exists }}
+      release_exists: ${{ steps.state.outputs.release_exists }}
+      previous_tag: ${{ steps.state.outputs.previous_tag }}
     steps:
-      - name: Resolve the tag
-        id: tag
-        env:
-          INPUT_TAG: ${{ inputs.tag }}
-          REF_NAME: ${{ github.ref_name }}
-        run: echo "tag=${INPUT_TAG:-$REF_NAME}" >> "$GITHUB_OUTPUT"
-
       - uses: actions/checkout@v4
         with:
-          ref: ${{ steps.tag.outputs.tag }}
+          ref: main
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-          cache: pip
-
-      - name: Check the tag matches the manifest
-        env:
-          TAG: ${{ steps.tag.outputs.tag }}
+      - name: Read the manifest version
+        id: version
         run: |
           python - <<'EOF'
           import json
@@ -52,39 +40,82 @@ jobs:
           import pathlib
           import re
 
-          tag = os.environ["TAG"]
-          version = tag.removeprefix("v")
-          if not re.fullmatch(r"\d+\.\d+\.\d+", version):
-              raise SystemExit(f"Tag {tag!r} is not vX.Y.Z")
-
-          manifest_path = pathlib.Path(
+          path = pathlib.Path(
               "custom_components/fermeture_ecole_quebec/manifest.json"
           )
-          manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-          if manifest["version"] != version:
-              raise SystemExit(
-                  f"Tag {tag!r} does not match manifest version "
-                  f"{manifest['version']!r}"
-              )
-          print(f"Releasing {version}")
+          manifest = json.loads(path.read_text(encoding="utf-8"))
+          version = manifest["version"]
+          if not re.fullmatch(r"\d+\.\d+\.\d+", version):
+              raise SystemExit(f"Invalid manifest version {version!r}")
+
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+              fh.write(f"version={version}\ntag=v{version}\n")
+          print(f"Manifest version: {version}")
           EOF
+
+      - name: Look for an existing tag and release
+        id: state
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          if git rev-parse --verify --quiet "refs/tags/$TAG" >/dev/null; then
+            tag_exists=true
+          else
+            tag_exists=false
+          fi
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            release_exists=true
+          else
+            release_exists=false
+          fi
+          previous_tag="$(
+            git tag --sort=-version:refname --list 'v*' | grep -vx "$TAG" | head -n 1
+          )"
+          {
+            echo "tag_exists=$tag_exists"
+            echo "release_exists=$release_exists"
+            echo "previous_tag=$previous_tag"
+          } >> "$GITHUB_OUTPUT"
+          echo "Tag $TAG: tag exists=$tag_exists, release exists=$release_exists, previous=${previous_tag:-none}"
+
+  release:
+    name: Publish the release
+    needs: check
+    if: needs.check.outputs.release_exists == 'false'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
 
       - run: pip install ruff -r requirements_test.txt
       - run: ruff check .
       - run: ruff format --check .
       - run: pytest -q
 
+      - name: Create the tag
+        if: needs.check.outputs.tag_exists == 'false'
+        env:
+          TAG: ${{ needs.check.outputs.tag }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "$TAG"
+          git push origin "$TAG"
+
       - name: Publish the GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ steps.tag.outputs.tag }}
+          TAG: ${{ needs.check.outputs.tag }}
+          PREVIOUS_TAG: ${{ needs.check.outputs.previous_tag }}
         run: |
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            echo "Release $TAG already exists, nothing to do"
-            exit 0
-          fi
-
-          PREVIOUS_TAG="$(git describe --tags --abbrev=0 "${TAG}^" 2>/dev/null || true)"
           if [ -n "$PREVIOUS_TAG" ]; then
             RANGE="${PREVIOUS_TAG}..${TAG}"
             CHANGELOG="https://github.com/${GITHUB_REPOSITORY}/compare/${PREVIOUS_TAG}...${TAG}"
@@ -95,11 +126,11 @@ jobs:
 
           {
             git log --no-merges --pretty=format:'- %s (%h)' "$RANGE" \
-              | grep -v -- '- Bump version to ' || true
+              | grep -vE -- '^- (chore\(release\)|Bump version to) ' || true
             printf '\n\n**Full changelog**: %s\n' "$CHANGELOG"
           } > release-notes.md
 
           gh release create "$TAG" \
             --verify-tag \
-            --title "Fermeture école Québec ${TAG#v}" \
+            --title "$TAG" \
             --notes-file release-notes.md
