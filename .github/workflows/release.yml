@@ -83,7 +83,23 @@ jobs:
             echo "Release $TAG already exists, nothing to do"
             exit 0
           fi
+
+          PREVIOUS_TAG="$(git describe --tags --abbrev=0 "${TAG}^" 2>/dev/null || true)"
+          if [ -n "$PREVIOUS_TAG" ]; then
+            RANGE="${PREVIOUS_TAG}..${TAG}"
+            CHANGELOG="https://github.com/${GITHUB_REPOSITORY}/compare/${PREVIOUS_TAG}...${TAG}"
+          else
+            RANGE="$TAG"
+            CHANGELOG="https://github.com/${GITHUB_REPOSITORY}/releases/tag/${TAG}"
+          fi
+
+          {
+            git log --no-merges --pretty=format:'- %s (%h)' "$RANGE" \
+              | grep -v -- '- Bump version to ' || true
+            printf '\n\n**Full changelog**: %s\n' "$CHANGELOG"
+          } > release-notes.md
+
           gh release create "$TAG" \
             --verify-tag \
             --title "Fermeture école Québec ${TAG#v}" \
-            --generate-notes
+            --notes-file release-notes.md

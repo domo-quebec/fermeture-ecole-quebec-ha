@@ -218,7 +218,8 @@ la version.
 2. Le workflow incrémente `manifest.json`, lance ruff et pytest, crée le commit
    et le tag `vX.Y.Z`, puis démarre le workflow *Release*.
 3. *Release* vérifie que le tag correspond au manifest, relance les tests et
-   publie la release GitHub avec des notes générées.
+   publie la release GitHub avec la liste des commits depuis la version
+   précédente.
 
 Un tag poussé à la main fonctionne aussi, tant que `manifest.json` porte la même
 version : *Release* s'en charge. La Marketplace et HACS installent à partir de
