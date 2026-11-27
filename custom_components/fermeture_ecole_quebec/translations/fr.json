@@ -19,7 +19,7 @@
       },
       "manual": {
         "title": "Identifiant manuel",
-        "description": "Utilisez l'identifiant de https://github.com/domo-quebec/fermeture-ecoles/blob/main/list.md",
+        "description": "Utilisez l'identifiant de {list_url}",
         "data": {
           "school_id": "Identifiant de l'école"
         }

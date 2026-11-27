@@ -4,8 +4,6 @@ refresh:
   target:
     entity:
       integration: fermeture_ecole_quebec
-    device:
-      integration: fermeture_ecole_quebec
   fields:
     force:
       name: Force

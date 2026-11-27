@@ -19,7 +19,7 @@
       },
       "manual": {
         "title": "Manual school id",
-        "description": "Use the id from https://github.com/domo-quebec/fermeture-ecoles/blob/main/list.md",
+        "description": "Use the id from {list_url}",
         "data": {
           "school_id": "School id"
         }

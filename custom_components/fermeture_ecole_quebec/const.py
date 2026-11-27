@@ -11,6 +11,9 @@ DOMAIN: Final = "fermeture_ecole_quebec"
 
 URL_SCHOOL_LIST: Final = "https://www.tvanouvelles.ca/api/schools/list"
 URL_SCHOOL_CLOSED: Final = "https://www.tvanouvelles.ca/api/schools/closed"
+URL_SCHOOL_ID_LIST: Final = (
+    "https://github.com/domo-quebec/fermeture-ecoles/blob/main/list.md"
+)
 ATTRIBUTION: Final = "Données fournies par TVA Nouvelles"
 CONFIGURATION_URL: Final = "https://www.tvanouvelles.ca/ecoles-fermees"
 

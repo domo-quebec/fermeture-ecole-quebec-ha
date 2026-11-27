@@ -28,6 +28,8 @@ from .manager import FermetureEcolesManager
 
 _LOGGER = logging.getLogger(__name__)
 
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+
 type FermetureEcolesConfigEntry = ConfigEntry[FermetureEcolesRuntimeData]
 
 

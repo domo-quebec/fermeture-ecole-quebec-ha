@@ -1,6 +1,7 @@
 {
   "domain": "fermeture_ecole_quebec",
   "name": "Fermeture école Québec",
+  "categories": ["weather_alerts.public_warnings"],
   "codeowners": ["@domo-quebec"],
   "config_flow": true,
   "dependencies": [],

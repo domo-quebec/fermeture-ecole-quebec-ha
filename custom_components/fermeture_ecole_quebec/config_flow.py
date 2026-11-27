@@ -58,6 +58,7 @@ from .const import (
     DOMAIN,
     MAX_INTERVAL_MINUTES,
     MIN_INTERVAL_MINUTES,
+    URL_SCHOOL_ID_LIST,
 )
 from .manager import FermetureEcolesManager
 from .util import as_time
@@ -254,6 +255,7 @@ class FermetureEcolesConfigFlow(ConfigFlow, domain=DOMAIN):
                 {vol.Required(CONF_SCHOOL_ID): vol.All(int, vol.Range(min=1))}
             ),
             errors=errors,
+            description_placeholders={"list_url": URL_SCHOOL_ID_LIST},
         )
 
     @staticmethod
