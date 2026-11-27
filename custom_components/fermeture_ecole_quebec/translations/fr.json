@@ -1,0 +1,127 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Choisir une école",
+        "description": "Recherchez l'école par nom ou par ville.",
+        "data": {
+          "search": "Recherche (nom ou ville)",
+          "manual_id": "Saisir l'identifiant de l'école manuellement"
+        }
+      },
+      "school": {
+        "title": "Sélectionner l'école",
+        "description": "{count} école(s) affichée(s) sur {total} résultat(s). Affinez la recherche si l'école désirée est absente.",
+        "data": {
+          "school": "École",
+          "search_again": "Refaire la recherche"
+        }
+      },
+      "manual": {
+        "title": "Identifiant manuel",
+        "description": "Utilisez l'identifiant de https://github.com/domo-quebec/fermeture-ecoles/blob/main/list.md",
+        "data": {
+          "school_id": "Identifiant de l'école"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Impossible de joindre l'API de TVA Nouvelles.",
+      "invalid_response": "Réponse inattendue de l'API de TVA Nouvelles.",
+      "no_match": "Aucune école ne correspond à cette recherche.",
+      "invalid_id": "Identifiant d'école invalide.",
+      "unknown": "Erreur inattendue."
+    },
+    "abort": {
+      "already_configured": "Cette école est déjà configurée."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Horaire de rafraîchissement",
+        "description": "Les rafraîchissements ont lieu uniquement les jours d'école, à l'intérieur des fenêtres du matin et du soir.",
+        "data": {
+          "season": "Limiter les rafraîchissements à la saison scolaire",
+          "season_months": "Mois de la saison",
+          "morning_start": "Début de la fenêtre du matin",
+          "morning_end": "Fin de la fenêtre du matin",
+          "interval_min": "Intervalle minimum entre les rafraîchissements",
+          "interval_max": "Intervalle maximum entre les rafraîchissements",
+          "evening_enabled": "Rafraîchir une fois le soir",
+          "evening_start": "Début de la fenêtre du soir",
+          "evening_end": "Fin de la fenêtre du soir",
+          "workday_entity": "Entité jour ouvrable / congé",
+          "change_school": "Surveiller une autre école"
+        }
+      },
+      "search": {
+        "title": "Changer d'école",
+        "description": "Recherchez la nouvelle école par nom ou par ville.",
+        "data": {
+          "search": "Recherche (nom ou ville)"
+        }
+      },
+      "school": {
+        "title": "Sélectionner la nouvelle école",
+        "data": {
+          "school": "École"
+        }
+      }
+    },
+    "error": {
+      "invalid_interval": "L'intervalle minimum doit être inférieur ou égal à l'intervalle maximum.",
+      "invalid_morning_window": "Le début de la fenêtre du matin doit précéder sa fin.",
+      "invalid_evening_window": "Le début de la fenêtre du soir doit précéder sa fin.",
+      "invalid_season_months": "Sélectionnez au moins un mois de la saison, ou désactivez la limite de saison.",
+      "already_configured": "Cette école est déjà surveillée par une autre entrée.",
+      "cannot_connect": "Impossible de joindre l'API de TVA Nouvelles.",
+      "invalid_response": "Réponse inattendue de l'API de TVA Nouvelles.",
+      "no_match": "Aucune école ne correspond à cette recherche.",
+      "unknown": "Erreur inattendue."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "closure": {
+        "name": "Fermeture"
+      },
+      "last_update": {
+        "name": "Dernière mise à jour"
+      },
+      "next_update": {
+        "name": "Prochaine mise à jour"
+      }
+    },
+    "binary_sensor": {
+      "closure_active": {
+        "name": "Fermeture en cours"
+      }
+    },
+    "button": {
+      "refresh": {
+        "name": "Rafraîchir maintenant"
+      }
+    }
+  },
+  "services": {
+    "refresh": {
+      "name": "Rafraîchir l'école",
+      "description": "Interroge immédiatement l'API de TVA Nouvelles pour les écoles ciblées.",
+      "fields": {
+        "force": {
+          "name": "Forcer",
+          "description": "Contourner le cache partagé de 90 secondes et interroger l'API immédiatement."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "refresh_failed": {
+      "message": "Les données de fermeture n'ont pas pu être rafraîchies."
+    },
+    "no_target": {
+      "message": "Ciblez au moins une école (entité ou appareil) à rafraîchir."
+    }
+  }
+}

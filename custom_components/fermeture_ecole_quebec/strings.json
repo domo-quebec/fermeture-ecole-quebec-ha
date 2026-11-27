@@ -1,0 +1,127 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Choose a school",
+        "description": "Search the school by name or town.",
+        "data": {
+          "search": "Search (name or town)",
+          "manual_id": "Enter the school id manually"
+        }
+      },
+      "school": {
+        "title": "Select the school",
+        "description": "{count} school(s) shown out of {total} match(es). Refine your search if the school is missing.",
+        "data": {
+          "school": "School",
+          "search_again": "Search again"
+        }
+      },
+      "manual": {
+        "title": "Manual school id",
+        "description": "Use the id from https://github.com/domo-quebec/fermeture-ecoles/blob/main/list.md",
+        "data": {
+          "school_id": "School id"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Unable to reach the TVA Nouvelles API.",
+      "invalid_response": "Unexpected response from the TVA Nouvelles API.",
+      "no_match": "No school matches this search.",
+      "invalid_id": "Invalid school id.",
+      "unknown": "Unexpected error."
+    },
+    "abort": {
+      "already_configured": "This school is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Refresh schedule",
+        "description": "Refreshes only happen on school days, inside the morning and evening windows.",
+        "data": {
+          "season": "Limit refreshes to the school season",
+          "season_months": "Season months",
+          "morning_start": "Morning window start",
+          "morning_end": "Morning window end",
+          "interval_min": "Minimum interval between refreshes",
+          "interval_max": "Maximum interval between refreshes",
+          "evening_enabled": "Refresh once in the evening",
+          "evening_start": "Evening window start",
+          "evening_end": "Evening window end",
+          "workday_entity": "Workday / holiday entity",
+          "change_school": "Monitor another school"
+        }
+      },
+      "search": {
+        "title": "Change school",
+        "description": "Search the new school by name or town.",
+        "data": {
+          "search": "Search (name or town)"
+        }
+      },
+      "school": {
+        "title": "Select the new school",
+        "data": {
+          "school": "School"
+        }
+      }
+    },
+    "error": {
+      "invalid_interval": "The minimum interval must be lower than or equal to the maximum interval.",
+      "invalid_morning_window": "The morning window start must be before its end.",
+      "invalid_evening_window": "The evening window start must be before its end.",
+      "invalid_season_months": "Select at least one season month, or disable the season limit.",
+      "already_configured": "This school is already monitored by another entry.",
+      "cannot_connect": "Unable to reach the TVA Nouvelles API.",
+      "invalid_response": "Unexpected response from the TVA Nouvelles API.",
+      "no_match": "No school matches this search.",
+      "unknown": "Unexpected error."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "closure": {
+        "name": "Closure"
+      },
+      "last_update": {
+        "name": "Last update"
+      },
+      "next_update": {
+        "name": "Next update"
+      }
+    },
+    "binary_sensor": {
+      "closure_active": {
+        "name": "Closure in progress"
+      }
+    },
+    "button": {
+      "refresh": {
+        "name": "Refresh now"
+      }
+    }
+  },
+  "services": {
+    "refresh": {
+      "name": "Refresh school",
+      "description": "Query the TVA Nouvelles API immediately for the targeted schools.",
+      "fields": {
+        "force": {
+          "name": "Force",
+          "description": "Bypass the shared 90 second cache and query the API right away."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "refresh_failed": {
+      "message": "The school closure data could not be refreshed."
+    },
+    "no_target": {
+      "message": "Target at least one school (entity or device) to refresh."
+    }
+  }
+}

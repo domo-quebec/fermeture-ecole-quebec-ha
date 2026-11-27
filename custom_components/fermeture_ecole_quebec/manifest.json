@@ -1,0 +1,13 @@
+{
+  "domain": "fermeture_ecole_quebec",
+  "name": "Fermeture école Québec",
+  "codeowners": ["@domo-quebec"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/domo-quebec/fermeture-ecole-quebec-ha",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/domo-quebec/fermeture-ecole-quebec-ha/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}

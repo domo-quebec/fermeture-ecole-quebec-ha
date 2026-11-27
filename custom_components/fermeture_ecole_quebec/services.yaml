@@ -1,0 +1,16 @@
+refresh:
+  name: Refresh school
+  description: Query the TVA Nouvelles API immediately for the targeted schools.
+  target:
+    entity:
+      integration: fermeture_ecole_quebec
+    device:
+      integration: fermeture_ecole_quebec
+  fields:
+    force:
+      name: Force
+      description: Bypass the shared 90 second cache and query the API right away.
+      default: true
+      example: true
+      selector:
+        boolean:
