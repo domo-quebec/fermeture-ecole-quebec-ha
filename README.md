@@ -1,5 +1,11 @@
 # Fermeture école Québec — intégration Home Assistant
 
+> [!WARNING]
+> **Avertissement IA** — Cette intégration et sa documentation ont été
+> développées en grande partie avec l'aide d'outils d'intelligence
+> artificielle. Le code est fourni tel quel, sans garantie : relisez-le et
+> testez-le avant de l'installer.
+
 Intégration personnalisée qui suit les fermetures d'écoles **du Québec**
 annoncées par [TVA Nouvelles](https://www.tvanouvelles.ca/etat-ecoles-fermees)
 et les expose comme un appareil Home Assistant par école.
