@@ -208,24 +208,6 @@ python -m venv .venv
 .venv/bin/ruff format --check .
 ```
 
-### Versions et publications
-
-`custom_components/fermeture_ecole_quebec/manifest.json` est la seule source de
-la version.
-
-1. *Actions → Bump version → Run workflow*, puis choisir `patch`, `minor` ou
-   `major`.
-2. Le workflow incrémente `manifest.json`, lance ruff et pytest, crée le commit
-   et le tag `vX.Y.Z`, puis démarre le workflow *Release*.
-3. *Release* vérifie que le tag correspond au manifest, relance les tests et
-   publie la release GitHub avec la liste des commits depuis la version
-   précédente.
-
-Un tag poussé à la main fonctionne aussi, tant que `manifest.json` porte la même
-version : *Release* s'en charge. La Marketplace et HACS installent à partir de
-ce tag. Les workflows poussent directement sur `main` : la protection de branche
-doit l'autoriser.
-
 ## Licence
 
 MIT — voir [LICENSE](LICENSE). Données : © TVA Nouvelles.
