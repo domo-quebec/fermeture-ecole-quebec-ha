@@ -1,13 +1,8 @@
 # Fermeture école Québec — intégration Home Assistant
 
 Intégration personnalisée qui suit les fermetures d'écoles **du Québec**
-annoncées par [TVA Nouvelles](https://www.tvanouvelles.ca/ecoles-fermees) et les
-expose comme un appareil Home Assistant par école.
-
-Elle remplace le [package YAML `fermeture-ecoles`](https://github.com/domo-quebec/fermeture-ecoles)
-tout en conservant ses attributs (`message`, `information`) et ses états
-(`Fermée` / `Ouverte`), donc les cartes Lovelace existantes continuent de
-fonctionner.
+annoncées par [TVA Nouvelles](https://www.tvanouvelles.ca/etat-ecoles-fermees)
+et les expose comme un appareil Home Assistant par école.
 
 ## Sources de données
 
@@ -21,13 +16,24 @@ en cas de doute, vérifiez le site officiel de votre centre de services scolaire
 
 ## Installation
 
-> Nécessite Home Assistant **2025.8** ou plus récent (Python 3.13).
+> Nécessite Home Assistant **2026.11** ou plus récent pour la Marketplace.
+> L'intégration fonctionne aussi dès 2025.8 en installation manuelle.
 
-### HACS (dépôt personnalisé)
+### Marketplace
 
-1. HACS → Intégrations → menu ⋮ → *Dépôts personnalisés*.
-2. Ajouter `domo-quebec/fermeture-ecole-quebec-ha` en catégorie *Integration*.
-3. Installer, puis redémarrer Home Assistant.
+La Marketplace est intégrée à Home Assistant depuis la version 2026.11 ; HACS
+n'est plus nécessaire.
+
+1. Ouvrir **Marketplace** dans la barre latérale, puis accepter l'avertissement
+   une première fois.
+2. Menu ⋮ → **Dépôts personnalisés**, puis **Ajouter grâce à un lien**.
+   La Marketplace demande une connexion GitHub pour ajouter un dépôt
+   personnalisé : elle ne sert qu'à lire le dépôt public.
+3. Coller l'adresse
+   `https://github.com/domo-quebec/fermeture-ecole-quebec-ha`, choisir le type
+   *Intégration*, puis **Ajouter**.
+4. Installer **Fermeture école Québec**, puis redémarrer Home Assistant
+   lorsqu'il le demande.
 
 ### Manuelle
 
@@ -97,8 +103,8 @@ Chaque école crée un appareil avec :
 
 | Attribut | Description |
 | --- | --- |
-| `message` | Message libre de TVA (compatibilité package YAML) |
-| `information` | Liste des informations (`Cours suspendus`, `Pas de transport`…) (compatibilité package YAML) |
+| `message` | Message libre de TVA |
+| `information` | Liste des informations (`Cours suspendus`, `Pas de transport`…) |
 | `school_id`, `school_name`, `town`, `region`, `school_board` | Identification de l'école |
 | `closure_state` | État brut de la fermeture (`closed`) |
 | `closure_start`, `closure_end` | Fenêtre de la fermeture (ISO 8601) |
@@ -175,20 +181,6 @@ L'option « Entité jour ouvrable » accepte un `binary_sensor` ou un
 `input_boolean` (par exemple celui de l'intégration
 [Workday](https://www.home-assistant.io/integrations/workday/)). Si l'entité
 est `unknown` ou `unavailable`, le rafraîchissement a lieu quand même.
-
-## Compatibilité avec les cartes Lovelace existantes
-
-Les cartes du dépôt `fermeture-ecoles` utilisent :
-
-```jinja
-{{ states('sensor.nom_ecole') }}
-{{ state_attr('sensor.nom_ecole', 'message') }}
-{{ state_attr('sensor.nom_ecole', 'information') }}
-```
-
-Adaptez uniquement l'`entity_id` vers la nouvelle entité de fermeture ; les
-attributs et les valeurs (`Fermée` / `Ouverte`) sont identiques. L'attribut
-`icon` n'est plus `mdi:town-hall` mais `mdi:school` / `mdi:school-off`.
 
 ## Dépannage
 

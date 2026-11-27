@@ -15,7 +15,7 @@ URL_SCHOOL_ID_LIST: Final = (
     "https://github.com/domo-quebec/fermeture-ecoles/blob/main/list.md"
 )
 ATTRIBUTION: Final = "Données fournies par TVA Nouvelles"
-CONFIGURATION_URL: Final = "https://www.tvanouvelles.ca/ecoles-fermees"
+CONFIGURATION_URL: Final = "https://www.tvanouvelles.ca/etat-ecoles-fermees"
 
 PLATFORMS: Final = (
     Platform.SENSOR,
