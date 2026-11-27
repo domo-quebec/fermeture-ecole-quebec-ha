@@ -1,0 +1,89 @@
+name: Release
+
+# Publishing is driven by the version tag: it must match the version in
+# custom_components/fermeture_ecole_quebec/manifest.json.
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag to publish (for example v0.1.1)
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Publish release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve the tag
+        id: tag
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
+          REF_NAME: ${{ github.ref_name }}
+        run: echo "tag=${INPUT_TAG:-$REF_NAME}" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.tag.outputs.tag }}
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Check the tag matches the manifest
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          python - <<'EOF'
+          import json
+          import os
+          import pathlib
+          import re
+
+          tag = os.environ["TAG"]
+          version = tag.removeprefix("v")
+          if not re.fullmatch(r"\d+\.\d+\.\d+", version):
+              raise SystemExit(f"Tag {tag!r} is not vX.Y.Z")
+
+          manifest_path = pathlib.Path(
+              "custom_components/fermeture_ecole_quebec/manifest.json"
+          )
+          manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+          if manifest["version"] != version:
+              raise SystemExit(
+                  f"Tag {tag!r} does not match manifest version "
+                  f"{manifest['version']!r}"
+              )
+          print(f"Releasing {version}")
+          EOF
+
+      - run: pip install ruff -r requirements_test.txt
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: pytest -q
+
+      - name: Publish the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists, nothing to do"
+            exit 0
+          fi
+          gh release create "$TAG" \
+            --verify-tag \
+            --title "Fermeture école Québec ${TAG#v}" \
+            --generate-notes

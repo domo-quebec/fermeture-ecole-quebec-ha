@@ -1,0 +1,108 @@
+name: Bump version
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Version bump to apply
+        required: true
+        default: patch
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: bump-version
+  cancel-in-progress: false
+
+jobs:
+  bump:
+    name: Bump, tag and start the release
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Compute the next version
+        id: version
+        env:
+          BUMP: ${{ inputs.bump }}
+        run: |
+          python - <<'EOF'
+          import json
+          import os
+          import pathlib
+          import re
+
+          path = pathlib.Path(
+              "custom_components/fermeture_ecole_quebec/manifest.json"
+          )
+          text = path.read_text(encoding="utf-8")
+          manifest = json.loads(text)
+          major, minor, patch = (
+              int(part) for part in manifest["version"].split(".")
+          )
+          bump = os.environ["BUMP"]
+          if bump == "major":
+              major, minor, patch = major + 1, 0, 0
+          elif bump == "minor":
+              minor, patch = minor + 1, 0
+          elif bump == "patch":
+              patch += 1
+          else:
+              raise SystemExit(f"Unknown bump {bump!r}")
+
+          version = f"{major}.{minor}.{patch}"
+          # Only rewrite the version value so the manifest keeps its layout.
+          text, count = re.subn(
+              r'("version":\s*")\d+\.\d+\.\d+(")',
+              rf"\g<1>{version}\g<2>",
+              text,
+          )
+          if count != 1:
+              raise SystemExit("Could not find a single version in the manifest")
+          path.write_text(text, encoding="utf-8")
+
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+              fh.write(f"version={version}\ntag=v{version}\n")
+          print(f"Next version: {version}")
+          EOF
+
+      - run: pip install ruff -r requirements_test.txt
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: pytest -q
+
+      - name: Commit and tag
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add custom_components/fermeture_ecole_quebec/manifest.json
+          git commit -m "Bump version to $VERSION"
+          git tag -a "$TAG" -m "Fermeture école Québec $VERSION"
+          git push origin HEAD:main
+          git push origin "$TAG"
+
+      - name: Start the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: gh workflow run release.yml --ref main -f "tag=$TAG"
