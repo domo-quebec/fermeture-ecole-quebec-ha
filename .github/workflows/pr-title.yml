@@ -1,0 +1,27 @@
+name: Pull request title
+
+# main only changes through pull requests and is squash merged, so the PR title
+# becomes the commit message. Keep it a conventional commit.
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  pull-requests: read
+
+jobs:
+  conventional:
+    name: Check the conventional title
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the pull request title
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          pattern='^(feat|fix|chore|docs|ci|refactor|test|perf|build|revert)(\([a-z0-9._-]+\))?!?: .+'
+          if [[ ! "$TITLE" =~ $pattern ]]; then
+            echo "::error::The pull request title must be a conventional commit, for example 'fix: ...', 'ci(release): ...' or 'docs: ...'."
+            echo "Got: $TITLE"
+            exit 1
+          fi
+          echo "Title OK: $TITLE"
